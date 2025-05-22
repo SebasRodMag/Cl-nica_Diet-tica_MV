@@ -5,7 +5,6 @@ use App\Http\Controllers\DocumentoController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\HistorialController;
-use App\Http\Controllers\DocumentoController;
 
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
