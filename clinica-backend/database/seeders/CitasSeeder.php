@@ -3,52 +3,39 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\User;
 use App\Models\Cita;
-use Faker\Factory as Faker;
-use Carbon\Carbon;
 
 class CitasSeeder extends Seeder
 {
     public function run()
     {
-        $faker = Faker::create();
+        $citasACrear = 200; //Cantidad de citas
+        $intentosMaximos = 20; // Para evitar bucle infinito si hay muchas colisiones
+        $creadas = 0;
+        $intentos = 0;
 
-        $duracionCitaMinutos = 30;
-        $horarioInicio = 8;  // 08:00 horas
-        $horarioFin = 15;    // 15:00 horas
+        while ($creadas < $citasACrear && $intentos < $intentosMaximos) {
+            $intentos++;
 
-        $fechaInicio = Carbon::today();
+            $cita = Cita::factory()->make();
 
-        // Obtener especialistas y pacientes
-        $especialistas = User::role('especialista')->get();
-        $pacientes = User::role('paciente')->get();
+            //Verificar si ya existe cita con paciente, especialista, fecha y hora idénticos
+            $existe = Cita::where('paciente_id', $cita->paciente_id)
+                ->where('especialista_id', $cita->especialista_id)
+                ->where('fecha_cita', $cita->fecha_cita)
+                ->where('hora_cita', $cita->hora_cita)
+                ->exists();
 
-        // Crear citas para cada paciente con especialistas aleatorios
-        foreach ($pacientes as $paciente) {
-            // Cada paciente tendrá entre 1 y 3 citas
-            $numCitas = rand(1, 3);
-
-            for ($i = 0; $i < $numCitas; $i++) {
-                $especialista = $especialistas->random();
-
-                // Generar fecha y hora de la cita dentro del rango permitido
-                $fecha = $fechaInicio->copy()->addDays(rand(0, 30));
-                $hora = rand($horarioInicio * 60, ($horarioFin - 1) * 60); // minutos desde medianoche
-
-                // Convertir minutos a hora y minuto
-                $horaCita = intdiv($hora, 60);
-                $minutoCita = $hora % 60;
-
-                Cita::create([
-                    'paciente_id' => $paciente->id,
-                    'especialista_id' => $especialista->id,
-                    'fecha' => $fecha->toDateString(),
-                    'hora' => sprintf('%02d:%02d:00', $horaCita, $minutoCita),
-                    'estado' => 'pendiente',
-                    'comentarios' => $faker->sentence(),
-                ]);
+            if (!$existe) {
+                $cita->save();
+                $creadas++;
             }
+        }
+
+        if ($creadas < $citasACrear) {
+            $this->command->warn("Solo se pudieron crear {$creadas} citas después de {$intentos} intentos.");
+        } else {
+            $this->command->info("Se crearon {$creadas} citas correctamente.");
         }
     }
 }

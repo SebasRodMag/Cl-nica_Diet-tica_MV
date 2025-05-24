@@ -16,15 +16,11 @@ class User extends Authenticatable
         'password',
     ];
 
-    // Relaciones
-
-    // Citas donde es paciente
     public function citasComoPaciente()
     {
         return $this->hasMany(Cita::class, 'paciente_id');
     }
 
-    // Citas donde es especialista
     public function citasComoEspecialista()
     {
         return $this->hasMany(Cita::class, 'especialista_id');

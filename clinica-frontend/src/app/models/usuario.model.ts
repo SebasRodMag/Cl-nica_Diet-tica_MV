@@ -6,7 +6,7 @@ export interface Usuario {
     apellidos: string;
     dni_usuario: string;
     email: string;
-    fecha_nacimiento: string; // Formato ISO (ej: "2025-05-24")
+    fecha_nacimiento: string;
     telefono: string;
     rol: RolUsuario;
     fecha_creacion: string;

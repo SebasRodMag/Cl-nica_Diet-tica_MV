@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Auth;
 
 class HistorialController extends Controller
 {
-    // Admin: listar todos
+    //Listar todos los historiales (solo admin)
     public function index()
     {
         if (!Auth::user()->hasRole('admin')) {
@@ -18,23 +18,20 @@ class HistorialController extends Controller
         return response()->json(Historial::with(['paciente', 'especialista', 'documentos'])->get());
     }
 
-    // Ver historial específico (según rol)
+    //Ver historial específico
     public function show($id)
     {
         $historial = Historial::with('documentos')->findOrFail($id);
         $user = Auth::user();
 
-        // Admin: acceso total
         if ($user->hasRole('admin')) {
             return response()->json($historial);
         }
 
-        // Paciente: solo su propio historial
         if ($user->hasRole('paciente') && $historial->paciente_id == $user->id) {
             return response()->json($historial);
         }
 
-        // Especialista: solo historial de sus pacientes
         if ($user->hasRole('especialista') && $historial->especialista_id == $user->id) {
             return response()->json($historial);
         }
@@ -42,7 +39,7 @@ class HistorialController extends Controller
         return response()->json(['error' => 'No autorizado'], 403);
     }
 
-    // Crear historial (solo especialista)
+    //Crear historial (solo especialista)
     public function store(Request $request)
     {
         if (!Auth::user()->hasRole('especialista')) {
@@ -63,7 +60,6 @@ class HistorialController extends Controller
         return response()->json($historial, 201);
     }
 
-    // (Opcional) Actualizar historial
     public function update(Request $request, $id)
     {
         $historial = Historial::findOrFail($id);
@@ -83,7 +79,7 @@ class HistorialController extends Controller
         return response()->json($historial);
     }
 
-    // Eliminar historial (admin)
+    //Eliminar historial (admin)
     public function destroy($id)
     {
         if (!Auth::user()->hasRole('admin')) {

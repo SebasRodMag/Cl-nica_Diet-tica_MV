@@ -25,7 +25,6 @@ class AdminsSeeder extends Seeder
             if (!$adminExistente) {
                 Admin::create([
                     'user_id' => $usuario->id,
-                    // Agrega aquí otros campos que tenga tu tabla admins si es necesario
                 ]);
             }
         }

@@ -17,27 +17,26 @@ class UserSeeder extends Seeder
         $totalAdmins = 2;
         $totalEspecialistas = 10;
         $totalPacientes = 180;
-        $totalUsuarios = 8; // resto para completar 200 usuarios
+        $totalUsuarios = 8;
 
         $password = Hash::make('pass123');
 
-        // Crear roles si no existen
-        $roles = ['admin', 'especialista', 'paciente', 'usuario'];
+        $roles = ['administrador', 'especialista', 'paciente', 'usuario'];
         foreach ($roles as $rol) {
             Role::firstOrCreate(['name' => $rol]);
         }
 
-        // Crear administradores
+        //Crear administradores
         for ($i = 0; $i < $totalAdmins; $i++) {
             $user = User::create([
                 'name' => $faker->name,
                 'email' => "admin{$i}@ejemplo.com",
                 'password' => $password,
             ]);
-            $user->assignRole('admin');
+            $user->assignRole('administrador');
         }
 
-        // Crear especialistas
+        //Crear especialistas
         for ($i = 0; $i < $totalEspecialistas; $i++) {
             $user = User::create([
                 'name' => $faker->name,
@@ -47,7 +46,7 @@ class UserSeeder extends Seeder
             $user->assignRole('especialista');
         }
 
-        // Crear pacientes
+        //Crear pacientes
         for ($i = 0; $i < $totalPacientes; $i++) {
             $user = User::create([
                 'name' => $faker->name,
@@ -57,7 +56,7 @@ class UserSeeder extends Seeder
             $user->assignRole('paciente');
         }
 
-        // Crear usuarios normales
+        //Crear usuarios normales
         for ($i = 0; $i < $totalUsuarios; $i++) {
             $user = User::create([
                 'name' => $faker->name,

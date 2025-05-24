@@ -30,7 +30,6 @@ class EspecialistasSeeder extends Seeder
                     'user_id' => $usuario->id,
                     'telefono' => $faker->phoneNumber,
                     'especialidad' => $faker->randomElement(['Nutrición', 'Dietética', 'Endocrinología', 'Psicología']),
-                    // otros campos que desees agregar
                 ]);
             }
         }

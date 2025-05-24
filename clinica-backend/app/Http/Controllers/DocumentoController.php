@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class DocumentoController extends Controller
 {
-    // Ver todos los documentos de un historial (según permisos)
+    //Ver todos los documentos de un historial (según permisos)
     public function index($historial_id)
     {
         $historial = Historial::findOrFail($historial_id);
@@ -27,7 +27,7 @@ class DocumentoController extends Controller
         return response()->json(['error' => 'No autorizado'], 403);
     }
 
-    // Subir documento al historial
+    //Subir documento al historial
     public function store(Request $request, $historial_id)
     {
         $request->validate([
@@ -57,7 +57,7 @@ class DocumentoController extends Controller
         return response()->json($documento, 201);
     }
 
-    // Descargar archivo
+    //Descargar archivo
     public function descargar($id)
     {
         $documento = Documento::findOrFail($id);
@@ -75,7 +75,7 @@ class DocumentoController extends Controller
         return response()->json(['error' => 'No autorizado'], 403);
     }
 
-    // Eliminar (soft) documento (admin o dueño)
+    //Eliminar (soft) documento admin o dueño
     public function destroy($id)
     {
         $documento = Documento::findOrFail($id);

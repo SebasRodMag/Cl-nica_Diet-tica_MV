@@ -30,7 +30,6 @@ class PacientesSeeder extends Seeder
                     'user_id' => $usuario->id,
                     'fecha_nacimiento' => $faker->dateTimeBetween('-65 years', '-18 years')->format('Y-m-d'),
                     'telefono' => $faker->phoneNumber,
-                    // otros campos que puedas necesitar
                 ]);
             }
         }

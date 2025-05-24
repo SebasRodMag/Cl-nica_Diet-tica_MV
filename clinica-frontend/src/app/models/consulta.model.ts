@@ -6,7 +6,7 @@ export interface Consulta {
     id_especialista: number;
     id_paciente: number;
     tipo_consulta: TipoConsulta;
-    fecha_hora_consulta: string; // Formato ISO DateTime (ej: "2025-05-24T10:30:00")
+    fecha_hora_consulta: string;
     estado: EstadoConsulta;
     comentario: string;
 }

@@ -12,7 +12,7 @@ use App\Models\Log;
 
 class AuthController extends Controller
 {
-    // Registro de usuario
+    //Registrar usuario
     public function register(Request $request)
     {
         $request->validate([
@@ -27,14 +27,13 @@ class AuthController extends Controller
             'password' => bcrypt($request->password),
         ]);
 
-        $user->assignRole('usuario'); // por defecto
+        $user->assignRole('usuario');
 
         $this->registrarLog($user->id, 'Registro', 'users', $user->id);
 
         return response()->json(['mensaje' => 'Usuario registrado correctamente'], 201);
     }
 
-    // Login
     public function login(Request $request)
     {
         $request->validate([
@@ -61,7 +60,6 @@ class AuthController extends Controller
         ]);
     }
 
-    // Logout
     public function logout(Request $request)
     {
         $user = $request->user();
@@ -73,7 +71,6 @@ class AuthController extends Controller
         return response()->json(['mensaje' => 'Sesión cerrada']);
     }
 
-    // Perfil autenticado
     public function perfil(Request $request)
     {
         return response()->json([

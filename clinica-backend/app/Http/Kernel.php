@@ -10,7 +10,6 @@ class Kernel extends HttpKernel
      * Los middleware globales que se ejecutan en cada solicitud.
      */
     protected $middleware = [
-        // Middleware globales
         \App\Http\Middleware\TrustProxies::class,
         \Illuminate\Http\Middleware\HandleCors::class,
         \App\Http\Middleware\PreventRequestsDuringMaintenance::class,
@@ -33,7 +32,6 @@ class Kernel extends HttpKernel
         ],
 
         'api' => [
-            // Importante para frontend como Angular/Vue
             \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
             'throttle:api',
             \Illuminate\Routing\Middleware\SubstituteBindings::class,

@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { UserService, Usuario } from '../service/user.service';
+import { UserService, Usuario } from '../service/User-Service/user.service';
 import { CommonModule } from '@angular/common';
 
 @Component({
@@ -29,13 +29,11 @@ export class UsuariosListComponent implements OnInit {
     }
 
     editarUsuario(id: number) {
-        // Navegar a componente edición, o abrir modal
         console.log('Editar usuario', id);
     }
 
     eliminarUsuario(id: number) {
         if (confirm('¿Estás seguro de eliminar este usuario?')) {
-            // Aquí llamar al servicio para eliminar y actualizar lista
             console.log('Eliminar usuario', id);
         }
     }
