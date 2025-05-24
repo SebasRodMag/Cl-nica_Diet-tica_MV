@@ -9,12 +9,61 @@ use Spatie\Permission\Models\Role;
 
 class UserController extends Controller
 {
-    // Listar todos los usuarios (admin)
-    public function index()
+    public function __construct()
     {
-        $this->authorize('admin-only'); // Asegúrate de tener una policy o usa middleware
+        // Solo admins pueden gestionar usuarios
+        $this->middleware('role:administrador');
+    }
+    // Listar todos los usuarios (admin)
+    public function index(Request $request)
+{
+    // Comprobar si el usuario está autenticado (aunque el middleware debería hacerlo)
+    $user = $request->user();
+    if (!$user) {
+        return response()->json(['error' => 'No autenticado'], 401);
+    }
 
-        return response()->json(User::with('roles')->get());
+    // Comprobar que el usuario tiene rol Administrador
+    if (!$user->hasRole('Administrador')) {
+        return response()->json(['error' => 'No autorizado'], 403);
+    }
+
+    // Obtener usuarios con campos específicos
+    $usuarios = User::select('id', 'name', 'dni_usuario', 'telefono', 'email')
+        ->with('roles:name')
+        ->get();
+
+    if ($usuarios->isEmpty()) {
+        return response()->json(['message' => 'No se encontraron usuarios'], 404);
+    }
+
+    $usuariosFormateados = $usuarios->map(function ($usuario) {
+        return [
+            'id' => $usuario->id,
+            'nombre' => $usuario->name,
+            'dni' => $usuario->dni_usuario,
+            'telefono' => $usuario->telefono,
+            'email' => $usuario->email,
+            'rol' => $usuario->roles->pluck('name')->first() ?? 'Usuario',
+        ];
+    });
+
+    return response()->json($usuariosFormateados);
+}
+
+    // Cambiar el rol de un usuario
+    public function updateRoles(Request $request, $id)
+    {
+        $user = User::findOrFail($id);
+        $roles = $request->input('roles', []);
+
+        // Limpia roles previos
+        $user->syncRoles($roles);
+
+        return response()->json([
+            'message' => 'Roles actualizados correctamente',
+            'user' => $user->load('roles')
+        ]);
     }
 
     // Ver detalles de un usuario

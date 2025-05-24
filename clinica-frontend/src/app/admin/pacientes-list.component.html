@@ -1,0 +1,35 @@
+<h3>Pacientes</h3>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Contacto</th>
+            <th>Especialista Asociado</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr *ngFor="let p of pacientes">
+            <td>{{ p.usuario.nombre }} {{ p.usuario.apellidos }}</td>
+            <td>{{ p.usuario.email }}<br>{{ p.usuario.telefono }}</td>
+            <td>
+                {{ p.especialista?.usuario?.nombre }} {{ p.especialista?.usuario?.apellidos }}
+            </td>
+            <td>
+                {{ p.fecha_baja ? 'Inactivo' : 'Activo' }}
+            </td>
+            <td>
+                <button class="btn btn-sm btn-primary me-1" (click)="abrirModal(p)">Editar</button>
+                <button class="btn btn-sm btn-danger" (click)="eliminar(p.id_paciente)">Eliminar</button>
+            </td>
+        </tr>
+    </tbody>
+</table>
+
+<app-paciente-edit
+    *ngIf="pacienteEditando"
+    [paciente]="pacienteEditando"
+    (guardar)="actualizar($event)"
+    (cancelar)="pacienteEditando = null">
+</app-paciente-edit>

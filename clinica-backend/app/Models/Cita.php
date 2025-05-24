@@ -9,7 +9,14 @@ class Cita extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['paciente_id', 'especialista_id', 'fecha', 'hora', 'estado', 'comentarios'];
+    protected $fillable = [
+        'paciente_id',
+        'especialista_id',
+        'fecha',
+        'hora',
+        'estado',
+        'comentarios',
+    ];
 
     public function paciente()
     {

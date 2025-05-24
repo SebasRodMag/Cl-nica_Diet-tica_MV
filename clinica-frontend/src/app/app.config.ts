@@ -1,8 +1,13 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { importProvidersFrom } from '@angular/core';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { HttpClientModule } from '@angular/common/http';
 import { provideRouter } from '@angular/router';
+import { routes } from './app.routes'; // tus rutas
 
-import { routes } from './app.routes';
-
-export const appConfig: ApplicationConfig = {
-  providers: [provideZoneChangeDetection({ eventCoalescing: true }), provideRouter(routes)]
+export const appConfig = {
+  providers: [
+    importProvidersFrom(BrowserAnimationsModule),
+	importProvidersFrom(HttpClientModule),
+    provideRouter(routes),
+  ],
 };

@@ -11,17 +11,27 @@ use Illuminate\Support\Facades\Validator;
 
 class CitasController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->middleware('role:administrador|especialista');
+    }
+
+
     // Listar citas según rol
     public function index()
     {
         $user = Auth::user();
 
-        if ($user->hasRole('admin') || $user->hasRole('especialista')) {
+        if ($user->hasRole('administrador')) {
             $citas = Cita::with(['paciente', 'especialista'])->get();
-        } elseif ($user->hasRole('paciente')) {
-            $citas = Cita::with(['especialista'])->where('paciente_id', $user->id)->get();
+        } elseif ($user->hasRole('especialista')) {
+            $citas = Cita::with(['paciente', 'especialista'])
+                ->where('especialista_id', $user->id)
+                ->get();
         } else {
-            return response()->json(['error' => 'No autorizado'], 403);
+            // Podrías retornar vacío o lanzar error si paciente no autorizado
+            return response()->json(['message' => 'No autorizado'], 403);
         }
 
         return response()->json($citas);
@@ -30,26 +40,41 @@ class CitasController extends Controller
     // Crear una nueva cita
     public function store(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $request->validate([
             'paciente_id' => 'required|exists:users,id',
             'especialista_id' => 'required|exists:users,id',
             'fecha' => 'required|date',
             'hora' => 'required',
+            'estado' => 'in:pendiente,realizada,no realizada,cancelada',
+            'comentarios' => 'nullable|string',
         ]);
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
+        $cita = Cita::create($request->all());
 
-        $cita = Cita::create([
-            'paciente_id' => $request->paciente_id,
-            'especialista_id' => $request->especialista_id,
-            'fecha' => $request->fecha,
-            'hora' => $request->hora,
-            'estado' => 'pendiente',
+        return response()->json([
+            'message' => 'Cita creada con éxito',
+            'cita' => $cita
+        ]);
+    }
+
+    // Actualizar una cita
+    public function update(Request $request, $id)
+    {
+        $cita = Cita::findOrFail($id);
+
+        $request->validate([
+            'fecha' => 'date',
+            'hora' => 'string',
+            'estado' => 'in:pendiente,realizada,no realizada,cancelada',
+            'comentarios' => 'nullable|string',
         ]);
 
-        return response()->json(['mensaje' => 'Cita creada con éxito', 'cita' => $cita], 201);
+        $cita->update($request->all());
+
+        return response()->json([
+            'message' => 'Cita actualizada correctamente',
+            'cita' => $cita
+        ]);
     }
 
     // Ver una cita específica
@@ -82,14 +107,9 @@ class CitasController extends Controller
     // Eliminar (SoftDelete)
     public function destroy($id)
     {
-        $cita = Cita::find($id);
-
-        if (!$cita) {
-            return response()->json(['error' => 'Cita no encontrada'], 404);
-        }
-
+        $cita = Cita::findOrFail($id);
         $cita->delete();
 
-        return response()->json(['mensaje' => 'Cita eliminada']);
+        return response()->json(['message' => 'Cita eliminada correctamente']);
     }
 }

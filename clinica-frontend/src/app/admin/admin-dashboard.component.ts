@@ -1,0 +1,45 @@
+import { Component } from '@angular/core';
+import { RouterModule } from '@angular/router';
+
+@Component({
+  selector: 'app-admin-dashboard',
+  standalone: true,
+  imports: [RouterModule],
+  template: `
+    <nav class="navbar navbar-expand navbar-light bg-light px-3">
+      <a class="navbar-brand" href="#">Admin Dashboard</a>
+      <div class="navbar-nav">
+        <a
+          routerLink="pacientes"
+          routerLinkActive="active"
+          class="nav-link"
+          >Pacientes</a
+        >
+        <a
+          routerLink="especialistas"
+          routerLinkActive="active"
+          class="nav-link"
+          >Especialistas</a
+        >
+        <a
+          routerLink="usuarios"
+          routerLinkActive="active"
+          class="nav-link"
+          >Usuarios</a
+        >
+      </div>
+    </nav>
+    <div class="p-3">
+      <router-outlet></router-outlet>
+    </div>
+  `,
+  styles: [
+    `
+      .nav-link.active {
+        font-weight: bold;
+        text-decoration: underline;
+      }
+    `,
+  ],
+})
+export class AdminDashboardComponent {}
