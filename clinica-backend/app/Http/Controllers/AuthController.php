@@ -9,6 +9,8 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
 use App\Models\Log;
+use App\Http\Resources\UserResource;
+
 
 class AuthController extends Controller
 {
@@ -36,27 +38,21 @@ class AuthController extends Controller
 
     public function login(Request $request)
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
+        $credentials = $request->validate([
+            'email' => ['required','email'],
+            'password' => ['required'],
         ]);
 
-        $user = User::where('email', $request->email)->first();
-
-        if (! $user || ! Hash::check($request->password, $user->password)) {
-            throw ValidationException::withMessages([
-                'email' => ['Las credenciales son incorrectas'],
-            ]);
+        if (!Auth::attempt($credentials)) {
+            return response()->json(['message' => 'Credenciales incorrectas'], 401);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        $this->registrarLog($user->id, 'Login', 'users', $user->id);
+        $user = Auth::user();
+        $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
+            'user' => new UserResource($user),
             'token' => $token,
-            'user' => $user->only('id', 'nombre', 'email'),
-            'roles' => $user->getRoleNames()
         ]);
     }
 

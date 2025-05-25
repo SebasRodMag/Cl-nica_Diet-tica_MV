@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Spatie\Permission\Models\Role;
 
+
 class UserController extends Controller
 {
     public function __construct()
@@ -21,11 +22,11 @@ class UserController extends Controller
             return response()->json(['error' => 'No autenticado'], 401);
         }
 
-        if (!$user->hasRole('Administrador')) {
+        if (!$user->hasRole('administrador')) {
             return response()->json(['error' => 'No autorizado'], 403);
         }
 
-        $usuarios = User::select('id', 'name', 'dni_usuario', 'telefono', 'email')
+        $usuarios = User::select('id', 'nombre', 'dni_usuario', 'telefono', 'email')
             ->with('roles:name')
             ->get();
 
@@ -86,10 +87,12 @@ class UserController extends Controller
     //Soft delete
     public function destroy($id)
     {
-        $this->authorize('admin-only'); // Solo admin puede borrar
+        if (!Auth::user()->hasRole('Administrador')) {
+        return response()->json(['error' => 'No autorizado'], 403);
+    }
         $user = User::findOrFail($id);
         $user->delete();
 
-        return response()->json(['message' => 'Usuario eliminado correctamente']);
+        return response()->json(['message' => 'Usuario eliminado correctamente'], 200);
     }
 }

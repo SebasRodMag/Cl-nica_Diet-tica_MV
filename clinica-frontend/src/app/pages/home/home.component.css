@@ -1,0 +1,16 @@
+.hero {
+    height: 70vh;
+    background: url('https://via.placeholder.com/1600x600/C8E6C9/2E8B57?text=Alimentos+Frescos') no-repeat center center/cover;
+    position: relative;
+}
+
+.hero .overlay {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+}
