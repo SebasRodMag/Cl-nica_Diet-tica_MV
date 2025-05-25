@@ -36,16 +36,22 @@ export class LoginComponent {
 
         switch (role?.toLowerCase()) {
           case 'administrador':
+            console.log('Usuario autenticado como administrador');
             this.router.navigate(['/admin']);
             break;
           case 'especialista':
+            console.log('Usuario autenticado como especialista');
             this.router.navigate(['/especialista']);
             break;
           case 'paciente':
+            console.log('Usuario autenticado como paciente');
             this.router.navigate(['/paciente']);
             break;
           default:
+            console.log('Usuario no autenticado. recibido:'+role);
+            console.log('User stored in localStorage:', localStorage.getItem('user'));
             this.errorMessage = 'Rol no reconocido o no asignado';
+            this.router.navigate(['/login']);
         }
       },
       error: (err) => {

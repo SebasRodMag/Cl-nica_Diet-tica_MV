@@ -15,6 +15,7 @@ export const routes: Routes = [
         component: AdminDashboardComponent,
         canActivate: [AuthGuard],
         canActivateChild: [AuthGuard],
+        data: { roles: ['administrador'] },
         children: [
             { path: 'pacientes', component: PacientesListComponent },
             { path: 'especialistas', component: EspecialistasListComponent },

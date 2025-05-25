@@ -1,6 +1,6 @@
 .hero {
     height: 70vh;
-    background: url('https://via.placeholder.com/1600x600/C8E6C9/2E8B57?text=Alimentos+Frescos') no-repeat center center/cover;
+    background: url('../../../assets/images/img_02.png') no-repeat center center/cover;
     position: relative;
 }
 

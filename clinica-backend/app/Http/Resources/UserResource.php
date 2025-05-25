@@ -4,6 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Models\User;
 
 class UserResource extends JsonResource
 {
@@ -19,7 +20,7 @@ class UserResource extends JsonResource
             'nombre' => $this->nombre,
             'apellidos' => $this->apellidos,
             'email' => $this->email,
-            // Otros campos que quieras exponer
+            'rol' => $this->getRoleNames()->first(),
         ];
     }
 }
