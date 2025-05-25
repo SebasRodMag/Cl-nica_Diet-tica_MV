@@ -3,35 +3,30 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Faker\Factory as Faker;
 use App\Models\User;
 use App\Models\Paciente;
-use Spatie\Permission\Models\Role;
-use Faker\Factory as Faker;
 
-class PacientesSeeder extends Seeder
+class PacienteSeeder extends Seeder
 {
     public function run()
     {
-        $faker = Faker::create();
+        $faker = Faker::create('es_ES');
 
-        $pacienteRole = Role::where('name', 'paciente')->first();
+        $usuariosPaciente = User::role('paciente')->get();
 
-        if (!$pacienteRole) {
-            $this->command->error('No existe el rol paciente.');
-            return;
-        }
-
-        $usuariosPacientes = User::role('paciente')->get();
-
-        foreach ($usuariosPacientes as $usuario) {
-            $pacienteExistente = Paciente::where('user_id', $usuario->id)->first();
-            if (!$pacienteExistente) {
-                Paciente::create([
-                    'user_id' => $usuario->id,
-                    'fecha_nacimiento' => $faker->dateTimeBetween('-65 years', '-18 years')->format('Y-m-d'),
-                    'telefono' => $faker->phoneNumber,
-                ]);
+        foreach ($usuariosPaciente as $usuario) {
+            //Verificar si ya tiene paciente para evitar duplicados
+            if ($usuario->paciente) {
+                continue;
             }
+
+            Paciente::create([
+                'user_id' => $usuario->id,
+                'numero_historial' => strtoupper($faker->bothify('??######??')),
+                'fecha_alta' => $faker->dateTimeBetween('-2 years', 'now'),
+                'fecha_baja' => $faker->boolean(20) ? $faker->dateTimeBetween('now', '+1 year') : null,
+            ]);
         }
     }
 }

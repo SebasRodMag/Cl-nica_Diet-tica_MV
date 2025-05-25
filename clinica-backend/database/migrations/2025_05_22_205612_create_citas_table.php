@@ -23,8 +23,8 @@ return new class extends Migration
         $table->timestamps();
         $table->softDeletes();
 
-        $table->foreign('id_paciente')->references('id_paciente')->on('pacientes');
-        $table->foreign('id_especialista')->references('id_especialista')->on('especialistas');
+        $table->foreign('id_paciente')->references('id')->on('pacientes')->onDelete('cascade');
+        $table->foreign('id_especialista')->references('id')->on('especialistas');
         });
     }
 

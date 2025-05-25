@@ -3,67 +3,105 @@
 namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
-use App\Models\User;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use Faker\Factory as Faker;
-use Spatie\Permission\Models\Role;
+use App\Models\User;
+use App\Models\Paciente;
+use App\Models\Especialista;
 
 class UserSeeder extends Seeder
 {
+    private $dniUsados = [];
+    private $telefonoUsados = [];
+
     public function run()
     {
-        $faker = Faker::create();
+        $faker = Faker::create('es_ES');
 
-        $totalAdmins = 2;
-        $totalEspecialistas = 10;
-        $totalPacientes = 180;
-        $totalUsuarios = 8;
+        $cantidadUsuario = 10;
+        $cantidadAdministrador = 2;
+        $cantidadPaciente = 200;
+        $cantidadEspecialista = 10;
 
-        $password = Hash::make('pass123');
+        $this->crearUsuariosConRol($cantidadUsuario, 'usuario', $faker);
+        $this->crearUsuariosConRol($cantidadAdministrador, 'administrador', $faker);
+        $this->crearUsuariosConRol($cantidadPaciente, 'paciente', $faker);
+        $this->crearUsuariosConRol($cantidadEspecialista, 'especialista', $faker);
+    }
 
-        $roles = ['administrador', 'especialista', 'paciente', 'usuario'];
-        foreach ($roles as $rol) {
-            Role::firstOrCreate(['name' => $rol]);
-        }
+    private function crearUsuariosConRol(int $cantidad, string $rol, $faker)
+    {
+        for ($i = 1; $i <= $cantidad; $i++) {
+            $dni = $this->generarDniUnico();
+            $telefono = $this->generarTelefonoUnico();
 
-        //Crear administradores
-        for ($i = 0; $i < $totalAdmins; $i++) {
+            $nombre = $faker->firstName();
+            $apellidos = $faker->lastName();
+
             $user = User::create([
-                'name' => $faker->name,
-                'email' => "admin{$i}@ejemplo.com",
-                'password' => $password,
+                'nombre' => $nombre,
+                'apellidos' => $apellidos,
+                'email' => "{$rol}{$i}@correo.com",
+                'password' => bcrypt('password'),
+                'dni_usuario' => $dni,
+                'telefono' => $telefono,
+                'direccion' => $faker->address,
             ]);
-            $user->assignRole('administrador');
-        }
 
-        //Crear especialistas
-        for ($i = 0; $i < $totalEspecialistas; $i++) {
-            $user = User::create([
-                'name' => $faker->name,
-                'email' => "especialista{$i}@ejemplo.com",
-                'password' => $password,
-            ]);
-            $user->assignRole('especialista');
-        }
+            $user->assignRole($rol);
 
-        //Crear pacientes
-        for ($i = 0; $i < $totalPacientes; $i++) {
-            $user = User::create([
-                'name' => $faker->name,
-                'email' => "paciente{$i}@ejemplo.com",
-                'password' => $password,
-            ]);
-            $user->assignRole('paciente');
+            if ($rol === 'paciente') {
+                Paciente::create([
+                    'user_id' => $user->id,
+                    'numero_historial' => strtoupper(Str::random(10)),
+                    'fecha_alta' => $faker->dateTimeBetween('-2 years', 'now'),
+                    'fecha_baja' => null,
+                ]);
+            } elseif ($rol === 'especialista') {
+                Especialista::create([
+                    'user_id' => $user->id,
+                    'telefono' => $telefono,
+                    'especialidad' => $faker->word,
+                ]);
+            }
         }
+    }
 
-        //Crear usuarios normales
-        for ($i = 0; $i < $totalUsuarios; $i++) {
-            $user = User::create([
-                'name' => $faker->name,
-                'email' => "usuario{$i}@ejemplo.com",
-                'password' => $password,
-            ]);
-            $user->assignRole('usuario');
-        }
+    private function generarDniUnico(): string
+    {
+        do {
+            $dni = $this->generarDni();
+        } while (in_array($dni, $this->dniUsados));
+
+        $this->dniUsados[] = $dni;
+        return $dni;
+    }
+
+    private function generarTelefonoUnico(): string
+    {
+        do {
+            $telefono = $this->generarTelefono();
+        } while (in_array($telefono, $this->telefonoUsados));
+
+        $this->telefonoUsados[] = $telefono;
+        return $telefono;
+    }
+
+    private function generarDni(): string
+    {
+        //Generar DNI
+        $numero = str_pad(rand(0, 99999999), 8, '0', STR_PAD_LEFT);
+        $letras = "TRWAGMYFPDXBNJZSQVHLCKE";
+        $pos = intval($numero) % 23;
+        $letra = $letras[$pos];
+        return $numero . $letra;
+    }
+
+    private function generarTelefono(): string
+    {
+        //Generar móvil
+        $prefijo = rand(6, 7);
+        $resto = str_pad(rand(0, 99999999), 8, '0', STR_PAD_LEFT);
+        return $prefijo . $resto;
     }
 }

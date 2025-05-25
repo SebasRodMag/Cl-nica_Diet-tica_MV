@@ -3,7 +3,8 @@
 namespace Database\Factories;
 
 use App\Models\Cita;
-use App\Models\User;
+use App\Models\Paciente;
+use App\Models\Especialista;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Carbon\Carbon;
 
@@ -11,7 +12,6 @@ class CitaFactory extends Factory
 {
     protected $model = Cita::class;
 
-    //Definimos los festivos
     protected $festivos = [
         '2025-01-01',
         '2025-05-01',
@@ -20,30 +20,43 @@ class CitaFactory extends Factory
 
     public function definition(): array
     {
+        $paciente = Paciente::inRandomOrder()->first();
+        $especialista = Especialista::inRandomOrder()->first();
+
+        if (!$paciente || !$especialista) {
+            throw new \Exception("No hay suficientes pacientes o especialistas para generar cita.");
+        }
+
         $fecha = $this->obtenerFechaValida();
 
         $horaInicio = Carbon::createFromTime(8, 0);
-        $bloque = rand(0, 13); // 14 bloques de 30 min (08:00 a 15:00)
+        $bloque = rand(0, 13);
         $hora = $horaInicio->copy()->addMinutes($bloque * 30);
 
         return [
-            'paciente_id' => User::role('paciente')->inRandomOrder()->first()?->id,
-            'especialista_id' => User::role('especialista')->inRandomOrder()->first()?->id,
-            'fecha_cita' => $fecha->toDateString(),
-            'hora_cita' => $hora->format('H:i:s'),
+            'id_paciente' => $paciente->id,
+            'id_especialista' => $especialista->id,
+            'fecha_hora_cita' => $fecha->setTimeFromTimeString($hora->format('H:i:s')),
             'estado' => 'pendiente',
-            'comentarios' => $this->faker->sentence(),
+            'comentario' => $this->faker->sentence(),
+            'es_primera' => true,
+            'tipo_cita' => $this->faker->randomElement(['presencial', 'telemática']),
         ];
     }
 
-    /**
-     * Obtiene una fecha válida que no sea sábado, domingo ni festivo.
-     */
+    public function primera()
+    {
+        return $this->state(function (array $attributes) {
+            return [
+                'es_primera' => true,
+            ];
+        });
+    }
+
     private function obtenerFechaValida(): Carbon
     {
         $fecha = Carbon::now()->addDays(rand(0, 30))->startOfDay();
 
-        // Si cae en fin de semana o festivo, se recorre hasta encontrar fecha válida
         while ($this->esFinDeSemana($fecha) || $this->esFestivo($fecha)) {
             $fecha->addDay();
         }
