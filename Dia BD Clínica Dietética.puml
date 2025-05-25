@@ -1,0 +1,115 @@
+@startuml ER_Consulta_Dietetica_Extendida
+skinparam linetype ortho
+hide circle
+
+entity "USUARIOS" as USUARIOS {
+    + id_usuario : INT [PK]
+    --
+    nombre : VARCHAR
+    apellidos : VARCHAR
+    dni_usuario : VARCHAR [UNIQUE]
+    email : VARCHAR [UNIQUE]
+    fecha_nacimiento : DATE
+    telefono : VARCHAR
+    rol : ENUM('paciente', 'especialista', 'usuario', 'administrador')
+    fecha_creacion : DATE
+    fecha_actualizacion : DATE
+    deleted_at : DATETIME [SoftDelete]
+}
+
+entity "PACIENTE" as PACIENTE {
+    + id_paciente : INT [PK]
+    --
+    id_usuario : INT [FK, UNIQUE]
+    fecha_alta : DATE
+    fecha_baja : DATE
+    deleted_at : DATETIME [SoftDelete]
+}
+
+entity "ESPECIALISTA" as ESPECIALISTA {
+    + id_especialista : INT [PK]
+    --
+    id_usuario : INT [FK, UNIQUE]
+    especialidad : VARCHAR
+    deleted_at : DATETIME [SoftDelete]
+}
+
+entity "HISTORIAL_MEDICO" as HISTORIAL {
+    + id_historial : INT [PK]
+    --
+    id_paciente : INT [FK]
+    descripcion : TEXT
+    fecha_hora_ultima_modificacion : DATETIME
+    deleted_at : DATETIME [SoftDelete]
+}
+
+entity "ENTRADA_HISTORIAL" as ENTRADA {
+    + id_entrada : INT [PK]
+    --
+    id_historial : INT [FK]
+    id_especialista : INT [FK]
+    descripcion : TEXT
+    fecha_hora : DATETIME
+}
+
+entity "DOCUMENTOS" as DOCUMENTOS {
+    + id_documento : INT [PK]
+    --
+    id_historial : INT [FK]
+    nombre_archivo : VARCHAR
+    ruta_archivo : TEXT
+    fecha_hora_subida : DATETIME
+    fecha_hora_ultima_modificacion : DATETIME
+}
+
+entity "CONSULTA" as CONSULTA {
+    + id_consulta : INT [PK]
+    --
+    id_especialista : INT [FK]
+    id_paciente : INT [FK]
+    tipo_cita : ENUM('presencial', 'telemática')
+    fecha_hora_cita : DATETIME
+    estado : ENUM('pendiente', 'realizada', 'cancelada')
+    comentario : TEXT
+    deleted_at : DATETIME [SoftDelete]
+}
+
+entity "LOGS" as LOGS {
+    + id_log : INT [PK]
+    --
+    id_usuario : INT [FK]
+    accion : VARCHAR
+    tabla_afectada : VARCHAR
+    id_registro : INT
+    fecha_hora : DATETIME
+    descripcion : TEXT
+}
+
+' Relaciones
+USUARIOS ||--|| PACIENTE : "1:1"
+USUARIOS ||--|| ESPECIALISTA : "1:1"
+PACIENTE ||--o{ HISTORIAL : "1:N"
+HISTORIAL ||--o{ DOCUMENTOS : "1:N"
+PACIENTE ||--o{ CONSULTA : "1:N"
+ESPECIALISTA ||--o{ CONSULTA : "1:N"
+HISTORIAL ||--o{ ENTRADA : "1:N"
+ESPECIALISTA ||--o{ ENTRADA : "1:N"
+USUARIOS ||--o{ LOGS : "1:N"
+
+note right of CONSULTA
+Relación N:M entre PACIENTE y ESPECIALISTA
+con atributos: tipo, fecha, estado y comentario.
+end note
+
+note right of ENTRADA
+Trazabilidad del historial médico:
+cada entrada representa una anotación
+realizada por un especialista.
+end note
+
+note right of LOGS
+Registro de acciones en el sistema:
+modificaciones, eliminaciones, accesos...
+end note
+
+@enduml

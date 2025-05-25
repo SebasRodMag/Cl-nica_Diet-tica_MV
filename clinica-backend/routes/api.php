@@ -22,7 +22,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
 
     Route::middleware(['auth:sanctum', 'role:Administrador,Especialista'])->group(function () {
-    // rutas para admin o especialista
+        Route::get('/citas', [CitaController::class, 'index']);
+        Route::post('/citas', [CitaController::class, 'store']);
+        Route::patch('/citas/{id}/finalizar', [CitaController::class, 'finalizarPrimeraCita']);
+        Route::patch('/citas/{id}/cancelar', [CitaController::class, 'cancelar']);
     });
 
     // Perfil usuario autenticado
@@ -32,10 +35,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::put('usuarios', UserController::class)->except(['update']);
     Route::put('usuarios/{id}/rol', [UserController::class, 'updateRole']);
     Route::delete('usuarios/{id}', [UserController::class, 'destroy']);
-
-    // Gestión citas
-    Route::apiResource('citas', CitaController::class);
-    Route::put('citas/{id}/cancelar', [CitaController::class, 'cancelar']);
 
     // Gestión historiales médicos
     Route::apiResource('historiales', HistorialController::class);

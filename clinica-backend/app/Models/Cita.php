@@ -9,22 +9,37 @@ class Cita extends Model
 {
     use SoftDeletes;
 
+    protected $table = 'citas';
+    protected $primaryKey = 'id_cita';
+
     protected $fillable = [
-        'paciente_id',
-        'especialista_id',
-        'fecha',
-        'hora',
+        'id_paciente',
+        'id_especialista',
+        'fecha_hora_cita',
+        'tipo_cita',
         'estado',
-        'comentarios',
+        'es_primera',
+        'comentario',
+    ];
+
+    protected $casts = [
+        'es_primera' => 'boolean',
+        'fecha_hora_cita' => 'datetime',
     ];
 
     public function paciente()
     {
-        return $this->belongsTo(User::class, 'paciente_id');
+        return $this->belongsTo(Paciente::class, 'id_paciente');
     }
 
     public function especialista()
     {
-        return $this->belongsTo(User::class, 'especialista_id');
+        return $this->belongsTo(Especialista::class, 'id_especialista');
+    }
+
+    
+    public function getEsRealizadaAttribute()
+    {
+        return $this->estado === 'realizada';
     }
 }

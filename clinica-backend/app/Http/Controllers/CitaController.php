@@ -36,36 +36,35 @@ class CitasController extends Controller
 
     //Crear cita
     public function store(Request $request)
-{
-    $request->validate([
-        'paciente_id' => 'required|exists:users,id',
-        'especialista_id' => 'required|exists:users,id',
-        'fecha_cita' => 'required|date',
-        'hora_cita' => 'required|date_format:H:i:s',
-        'comentarios' => 'nullable|string',
-    ]);
+    {
+        $user = Auth::user();
 
-    $existe = Cita::where('especialista_id', $request->especialista_id)
-        ->where('fecha_cita', $request->fecha_cita)
-        ->where('hora_cita', $request->hora_cita)
-        ->exists();
+        if ($user->rol !== 'paciente') {
+            return response()->json(['error' => 'Solo los pacientes pueden solicitar citas.'], 403);
+        }
 
-    if ($existe) {
-        return response()->json([
-            'message' => 'Ya existe una cita asignada al especialista en esa fecha y hora.'
-        ], 422);
+        $validated = $request->validate([
+            'id_especialista' => 'required|exists:especialistas,id_especialista',
+            'fecha_hora_cita' => 'required|date',
+            'tipo_cita' => 'required|in:presencial,telemática',
+        ]);
+
+        // Verificar si ya existe una cita inicial
+        $yaTienePrimera = Cita::where('id_paciente', $user->paciente->id_paciente)
+            ->where('es_primera', true)
+            ->exists();
+
+        $cita = Cita::create([
+            'id_paciente' => $user->paciente->id_paciente,
+            'id_especialista' => $validated['id_especialista'],
+            'fecha_hora_cita' => $validated['fecha_hora_cita'],
+            'tipo_cita' => $validated['tipo_cita'],
+            'estado' => 'pendiente',
+            'es_primera' => !$yaTienePrimera,
+        ]);
+
+        return response()->json($cita, 201);
     }
-
-    $cita = Cita::create($request->only([
-        'paciente_id',
-        'especialista_id',
-        'fecha_cita',
-        'hora_cita',
-        'comentarios'
-    ]));
-
-    return response()->json($cita, 201);
-}
 
     //Actualizar cita
     public function update(Request $request, $id)
@@ -102,16 +101,22 @@ class CitasController extends Controller
     //Cancelar una cita (solo cambia el estado)
     public function cancelar($id)
     {
-        $cita = Cita::find($id);
+        $cita = Cita::findOrFail($id);
+        $user = Auth::user();
 
-        if (!$cita) {
-            return response()->json(['error' => 'Cita no encontrada'], 404);
+        // Solo paciente o especialista asignado puede cancelar su propia cita
+        if (
+            !($user->rol === 'administrador') &&
+            !($user->rol === 'paciente' && $cita->id_paciente === $user->paciente->id_paciente) &&
+            !($user->rol === 'especialista' && $cita->id_especialista === $user->especialista->id_especialista)
+        ) {
+            return response()->json(['error' => 'No autorizado.'], 403);
         }
 
         $cita->estado = 'cancelada';
         $cita->save();
 
-        return response()->json(['mensaje' => 'Cita cancelada']);
+        return response()->json(['message' => 'Cita cancelada.']);
     }
 
     //Eliminar (SoftDelete)
@@ -121,5 +126,44 @@ class CitasController extends Controller
         $cita->delete();
 
         return response()->json(['message' => 'Cita eliminada correctamente']);
+    }
+
+
+    public function finalizarPrimeraCita(Request $request, $id)
+    {
+        $user = Auth::user();
+
+        if ($user->rol !== 'especialista') {
+            return response()->json(['error' => 'Solo especialistas pueden finalizar citas.'], 403);
+        }
+
+        $cita = Cita::findOrFail($id);
+
+        if (!$cita->es_primera || $cita->estado !== 'pendiente') {
+            return response()->json(['error' => 'No es una cita inicial pendiente.'], 400);
+        }
+
+        if ($cita->id_especialista !== $user->especialista->id_especialista) {
+            return response()->json(['error' => 'No tienes permiso para esta cita.'], 403);
+        }
+
+        $request->validate([
+            'mantener_como_paciente' => 'required|boolean',
+            'comentario' => 'nullable|string',
+        ]);
+
+        $cita->estado = 'realizada';
+        $cita->comentario = $request->input('comentario');
+        $cita->save();
+
+        // Cambiar rol si es rechazado
+        if (!$request->input('mantener_como_paciente')) {
+            $paciente = $cita->paciente;
+            $usuario = $paciente->usuario;
+            $usuario->rol = 'usuario';
+            $usuario->save();
+        }
+
+        return response()->json(['message' => 'Cita finalizada y paciente evaluado.']);
     }
 }
