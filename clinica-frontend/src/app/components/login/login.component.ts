@@ -26,31 +26,31 @@ export class LoginComponent {
   }
 
   onSubmit(): void {
-  if (this.loginForm.invalid) return;
+    if (this.loginForm.invalid) return;
 
-  const { email, password } = this.loginForm.value;
+    const { email, password } = this.loginForm.value;
 
-  this.authService.login(email, password).subscribe({
-    next: () => {
-      const role = this.authService.getUserRole();
-      switch (role) {
-        case 'admin':
-          this.router.navigate(['/admin']);
-          break;
-        case 'especialista':
-          this.router.navigate(['/especialista']);
-          break;
-        case 'paciente':
-          this.router.navigate(['/paciente']);
-          break;
-        default:
-          this.errorMessage = 'Rol no reconocido';
-      }
-    },
-    error: (err) => {
-      this.errorMessage =
-        err.error?.message || 'Credenciales incorrectas o error en el servidor';
-    },
-  });
-}
+    this.authService.login({ email, password }).subscribe({
+      next: () => {
+        const role = this.authService.getUserRole();
+
+        switch (role?.toLowerCase()) {
+          case 'administrador':
+            this.router.navigate(['/admin']);
+            break;
+          case 'especialista':
+            this.router.navigate(['/especialista']);
+            break;
+          case 'paciente':
+            this.router.navigate(['/paciente']);
+            break;
+          default:
+            this.errorMessage = 'Rol no reconocido o no asignado';
+        }
+      },
+      error: (err) => {
+        this.errorMessage = err.error?.message || 'Credenciales incorrectas o error en el servidor';
+      },
+    });
+  }
 }
